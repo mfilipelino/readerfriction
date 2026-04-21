@@ -186,3 +186,76 @@ def test_scan_fragmented_flow_detects_fragmentation(
     assert result.exit_code == 0
     payload = json.loads(result.stdout)
     assert payload["summary"]["flow_fragmentation"]["value"] >= 5
+
+
+# --- rf agent command --------------------------------------------------
+
+
+def test_agent_command_exits_zero(wrapper_chain_root: Path) -> None:
+    result = _invoke("agent", str(wrapper_chain_root))
+    assert result.exit_code == 0, result.output
+
+
+def test_agent_command_lists_forbidden_rules(wrapper_chain_root: Path) -> None:
+    result = _invoke("agent", str(wrapper_chain_root))
+    assert result.exit_code == 0
+    out = result.stdout
+    assert "Do NOT collapse multiple files into one file" in out
+    assert "Do NOT merge functions on the path into one giant function" in out
+    assert "Do NOT add no-op statements" in out
+    assert "Do NOT rename wrappers to sound meaningful" in out
+    assert "Do NOT hide calls behind dynamic dispatch" in out
+
+
+def test_agent_command_identifies_wrapper_chain(
+    wrapper_chain_root: Path,
+) -> None:
+    result = _invoke("agent", str(wrapper_chain_root))
+    assert result.exit_code == 0
+    out = result.stdout
+    for qualname in ("handlers.handle", "services.run", "repos.fetch"):
+        assert qualname in out
+    assert "db.query" in out
+    assert "Inline" in out
+
+
+def test_agent_command_writes_to_out(
+    wrapper_chain_root: Path, tmp_path: Path
+) -> None:
+    target = tmp_path / "prompt.md"
+    result = _invoke("agent", str(wrapper_chain_root), "--out", str(target))
+    assert result.exit_code == 0
+    content = target.read_text()
+    assert content.startswith("# Refactoring task:")
+    assert "Verification checklist" in content
+
+
+def test_agent_command_includes_verification_steps(
+    wrapper_chain_root: Path,
+) -> None:
+    result = _invoke("agent", str(wrapper_chain_root))
+    out = result.stdout
+    assert "complexipy" in out
+    assert "rf scan" in out
+    assert "pytest" in out
+
+
+def test_agent_command_clean_project_still_lists_rules(
+    clean_root: Path,
+) -> None:
+    result = _invoke("agent", str(clean_root))
+    assert result.exit_code == 0
+    assert "Do NOT collapse multiple files" in result.stdout
+
+
+def test_help_lists_agent_command() -> None:
+    result = _invoke("--help")
+    assert result.exit_code == 0
+    assert "agent" in result.output
+
+
+def test_agent_help_is_discoverable() -> None:
+    result = _invoke("agent", "--help")
+    assert result.exit_code == 0
+    out = result.output
+    assert "front-loads" in out or "NOT to do" in out or "gameable" in out

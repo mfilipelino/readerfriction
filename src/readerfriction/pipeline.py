@@ -42,6 +42,25 @@ from readerfriction.parser.entrypoints import detect_entrypoints
 
 
 def scan_project(root: Path, config: Config) -> ScanResult:
+    """Scan a project and return the ScanResult payload.
+
+    Convenience wrapper around :func:`scan_project_detail` that discards
+    the extra context used by the agent prompt renderer.
+    """
+
+    return scan_project_detail(root, config)[0]
+
+
+def scan_project_detail(
+    root: Path, config: Config
+) -> tuple[ScanResult, set[FunctionRef]]:
+    """Scan and return both the ScanResult and the wrapper set.
+
+    Used by ``rf agent`` to annotate the trace path with per-node
+    wrapper classification. Kept internal to avoid leaking AST nodes in
+    the public contract.
+    """
+
     root = root.resolve()
     files = discover_python_files(root, config.all_excludes)
     parsed_modules = [parse_file(path, root) for path in files]
@@ -64,14 +83,17 @@ def scan_project(root: Path, config: Config) -> ScanResult:
     total_score = score_module.compute(summary, config.weights)
     severity = _severity_for(total_score, config)
 
-    return ScanResult(
-        root=str(root),
-        scanned_files=len(files),
-        parse_errors=parse_errors,
-        entrypoints=entry_results,
-        summary=summary,
-        score=total_score,
-        severity=severity,
+    return (
+        ScanResult(
+            root=str(root),
+            scanned_files=len(files),
+            parse_errors=parse_errors,
+            entrypoints=entry_results,
+            summary=summary,
+            score=total_score,
+            severity=severity,
+        ),
+        wrappers,
     )
 
 
@@ -198,4 +220,4 @@ def _unused() -> None:
     _ = ModuleIR
 
 
-__all__ = ["scan_project"]
+__all__ = ["scan_project", "scan_project_detail"]

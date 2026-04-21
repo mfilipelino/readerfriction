@@ -19,14 +19,30 @@ from readerfriction.models import (
 )
 from readerfriction.parser.ast_parse import parse_file
 from readerfriction.parser.discover import discover_python_files
-from readerfriction.pipeline import scan_project
-from readerfriction.reports import json_report, markdown, text
+from readerfriction.pipeline import scan_project, scan_project_detail
+from readerfriction.reports import agent_prompt, json_report, markdown, text
 
 app = typer.Typer(
     name="rf",
     no_args_is_help=True,
     add_completion=False,
-    help="Measure navigational complexity in Python codebases.",
+    help=(
+        "ReaderFriction — measure navigational complexity in Python codebases.\n\n"
+        "Commands:\n"
+        "  scan     Report metrics for every entrypoint in a project.\n"
+        "  trace    Show the chosen trace path from one entrypoint.\n"
+        "  explain  Explain why rf classified one function as a wrapper.\n"
+        "  report   Render a markdown report (good for PR comments).\n"
+        "  diff     Compare rf scores between two local project paths.\n"
+        "  agent    Emit a prompt that tells an AI coding agent how to\n"
+        "           lower the score WITHOUT gaming the metric (no\n"
+        "           one-file collapse, no function merging, no classifier\n"
+        "           evasion). See docs/limits-and-anti-gaming.md.\n\n"
+        "All commands accept --format {text,json,markdown}, --out <file>,\n"
+        "--exclude <glob>, and --config <pyproject.toml>. --fail-on\n"
+        "'metric OP number' makes scan/report exit 1 when the threshold\n"
+        "trips. Run any command with --help for its full option list."
+    ),
 )
 
 
@@ -43,15 +59,56 @@ FAIL_ON_PATTERN = re.compile(
 
 @app.command()
 def scan(
-    path: Path = typer.Argument(..., exists=True),
-    format: OutputFormat = typer.Option(OutputFormat.text, "--format"),
-    out: Path | None = typer.Option(None, "--out"),
-    fail_on: str | None = typer.Option(None, "--fail-on"),
-    exclude: list[str] = typer.Option([], "--exclude"),
-    config_path: Path | None = typer.Option(None, "--config"),
-    no_color: bool = typer.Option(False, "--no-color"),
+    path: Path = typer.Argument(
+        ..., exists=True, help="Project root directory (or single .py file) to scan."
+    ),
+    format: OutputFormat = typer.Option(
+        OutputFormat.text,
+        "--format",
+        help="Output format: 'text' (rich tables), 'json' (schema-validated), 'markdown'.",
+    ),
+    out: Path | None = typer.Option(
+        None, "--out", help="Write output to this path instead of stdout."
+    ),
+    fail_on: str | None = typer.Option(
+        None,
+        "--fail-on",
+        help=(
+            "Exit 1 if the expression is truthy. Grammar: "
+            "'<metric> <op> <number>' where metric ∈ {score, trace_depth, "
+            "file_jumps, wrapper_depth, thin_wrapper_count, context_width, "
+            "flow_fragmentation, pass_through_ratio} and op ∈ {>, >=, <, <=, ==}. "
+            "Example: --fail-on 'score>30'."
+        ),
+    ),
+    exclude: list[str] = typer.Option(
+        [],
+        "--exclude",
+        help=(
+            "Glob pattern to exclude from discovery (repeatable). "
+            "Default excludes venv, .venv, build, dist, __pycache__, .git, "
+            ".tox, .mypy_cache, .pytest_cache, .ruff_cache."
+        ),
+    ),
+    config_path: Path | None = typer.Option(
+        None,
+        "--config",
+        help=(
+            "Path to a pyproject.toml containing [tool.readerfriction]. "
+            "Defaults to the nearest pyproject.toml walking up from the scan target."
+        ),
+    ),
+    no_color: bool = typer.Option(
+        False, "--no-color", help="Disable ANSI colour in text output."
+    ),
 ) -> None:
-    """Scan a project path and report metrics."""
+    """Scan a project and report metrics for every entrypoint.
+
+    Output includes: total score (weighted sum), severity (ok/warn/error
+    against configurable thresholds), per-entrypoint metrics, and the
+    chosen trace path from each entrypoint to the first meaningful
+    (non-wrapper) function.
+    """
 
     result = _run_scan(path, exclude, config_path)
     _write(_render(result, format, color=not no_color), out)
@@ -60,13 +117,27 @@ def scan(
 
 @app.command()
 def trace(
-    target: str = typer.Argument(..., help="file.py:func"),
-    format: OutputFormat = typer.Option(OutputFormat.text, "--format"),
-    out: Path | None = typer.Option(None, "--out"),
-    config_path: Path | None = typer.Option(None, "--config"),
-    exclude: list[str] = typer.Option([], "--exclude"),
+    target: str = typer.Argument(
+        ..., help="Target entrypoint as 'file.py:func' (e.g. 'src/cli.py:main')."
+    ),
+    format: OutputFormat = typer.Option(
+        OutputFormat.text, "--format", help="Output format."
+    ),
+    out: Path | None = typer.Option(None, "--out", help="Destination file."),
+    config_path: Path | None = typer.Option(
+        None, "--config", help="Path to pyproject.toml with [tool.readerfriction]."
+    ),
+    exclude: list[str] = typer.Option(
+        [], "--exclude", help="Additional exclude globs."
+    ),
 ) -> None:
-    """Trace a function along its chosen trace path."""
+    """Print the chosen trace path from one entrypoint.
+
+    The trace path is the longest simple path (up to the max-length cap)
+    from the entrypoint to the first non-wrapper function, ties broken
+    lexicographically. Useful for confirming what rf considers the
+    'main path' before interpreting a score.
+    """
 
     file_path, func_name = _parse_target(target)
     root = file_path.parent
@@ -78,12 +149,24 @@ def trace(
 
 @app.command()
 def explain(
-    target: str = typer.Argument(..., help="file.py:func"),
-    format: OutputFormat = typer.Option(OutputFormat.text, "--format"),
-    out: Path | None = typer.Option(None, "--out"),
-    config_path: Path | None = typer.Option(None, "--config"),
+    target: str = typer.Argument(
+        ..., help="Target function as 'file.py:func'."
+    ),
+    format: OutputFormat = typer.Option(
+        OutputFormat.text, "--format", help="Output format."
+    ),
+    out: Path | None = typer.Option(None, "--out", help="Destination file."),
+    config_path: Path | None = typer.Option(
+        None, "--config", help="Path to pyproject.toml."
+    ),
 ) -> None:
-    """Explain wrapper classification for a function."""
+    """Explain the wrapper classification for a single function.
+
+    Shows which of the 8 wrapper-heuristic rules (W-01..W-08) fired, the
+    threshold, and the list of callers and callees. Use this to decide
+    whether a function flagged as a wrapper should actually be inlined
+    or whether rf is confused.
+    """
 
     file_path, func_name = _parse_target(target)
     config = _load_cli_config(config_path, [])
@@ -93,14 +176,28 @@ def explain(
 
 @app.command()
 def report(
-    path: Path = typer.Argument(..., exists=True),
-    format: OutputFormat = typer.Option(OutputFormat.markdown, "--format"),
-    out: Path | None = typer.Option(None, "--out"),
-    exclude: list[str] = typer.Option([], "--exclude"),
-    config_path: Path | None = typer.Option(None, "--config"),
-    fail_on: str | None = typer.Option(None, "--fail-on"),
+    path: Path = typer.Argument(..., exists=True, help="Project root to report on."),
+    format: OutputFormat = typer.Option(
+        OutputFormat.markdown,
+        "--format",
+        help="Default 'markdown'; also accepts 'text' and 'json'.",
+    ),
+    out: Path | None = typer.Option(
+        None,
+        "--out",
+        help="Write the report here; common usage is '--out reader-friction.md'.",
+    ),
+    exclude: list[str] = typer.Option([], "--exclude", help="Exclude globs."),
+    config_path: Path | None = typer.Option(None, "--config", help="pyproject path."),
+    fail_on: str | None = typer.Option(
+        None, "--fail-on", help="Exit 1 if the expression is truthy (see scan --help)."
+    ),
 ) -> None:
-    """Render a report for a project."""
+    """Render a report for a project.
+
+    Same data as 'scan' but defaults to markdown output so the result
+    can be pasted into a PR comment or committed to the repository.
+    """
 
     result = _run_scan(path, exclude, config_path)
     _write(_render(result, format, color=False), out)
@@ -109,15 +206,27 @@ def report(
 
 @app.command()
 def diff(
-    path: Path = typer.Argument(..., exists=True),
-    base: Path = typer.Option(..., "--base", exists=True),
-    head: Path | None = typer.Option(None, "--head"),
-    format: OutputFormat = typer.Option(OutputFormat.text, "--format"),
-    out: Path | None = typer.Option(None, "--out"),
-    exclude: list[str] = typer.Option([], "--exclude"),
-    config_path: Path | None = typer.Option(None, "--config"),
+    path: Path = typer.Argument(
+        ..., exists=True, help="HEAD project root (defaults to --head if omitted)."
+    ),
+    base: Path = typer.Option(
+        ..., "--base", exists=True, help="BASE project root to compare against."
+    ),
+    head: Path | None = typer.Option(
+        None, "--head", help="HEAD project root (overrides positional path)."
+    ),
+    format: OutputFormat = typer.Option(
+        OutputFormat.text, "--format", help="Output format."
+    ),
+    out: Path | None = typer.Option(None, "--out", help="Destination file."),
+    exclude: list[str] = typer.Option([], "--exclude", help="Exclude globs."),
+    config_path: Path | None = typer.Option(None, "--config", help="pyproject path."),
 ) -> None:
-    """Compare two scan roots (v0.1 scope is local paths, not git refs)."""
+    """Compare rf scores between two local project paths.
+
+    v0.1 scope is local directories only — git-ref support is a 0.2
+    follow-up. Prints base score, head score, and the delta.
+    """
 
     head_root = head or path
     config = _load_cli_config(config_path, exclude)
@@ -132,6 +241,46 @@ def diff(
         f"Delta: {symbol}{abs(delta)}",
     ]
     _write("\n".join(lines) + "\n", out)
+
+
+@app.command()
+def agent(
+    path: Path = typer.Argument(
+        ..., exists=True, help="Project root to analyse for the agent prompt."
+    ),
+    out: Path | None = typer.Option(
+        None, "--out", help="Write the prompt here instead of stdout."
+    ),
+    exclude: list[str] = typer.Option([], "--exclude", help="Exclude globs."),
+    config_path: Path | None = typer.Option(None, "--config", help="pyproject path."),
+) -> None:
+    """Emit an AI-coding-agent prompt for refactoring the project.
+
+    The prompt front-loads what NOT to do (don't collapse files, don't
+    merge functions into one, don't defeat the wrapper classifier with
+    no-op statements, don't rename superficially, don't hide calls
+    behind dynamic dispatch) because the rf score is cheaply gameable
+    if naively optimised. It then lists the real refactors to apply —
+    inline wrapper chains, reduce entrypoint fan-out, tighten context
+    width — with concrete targets derived from the current scan.
+
+    Typical usage:
+
+        rf agent src/ --out .claude/refactor-prompt.md
+        claude -p "$(cat .claude/refactor-prompt.md)"
+
+    Or pipe directly:
+
+        rf agent src/ | claude -
+
+    See docs/limits-and-anti-gaming.md for the reasoning behind every
+    'do not' rule.
+    """
+
+    config = _load_cli_config(config_path, exclude)
+    scan_result, wrappers = scan_project_detail(path, config)
+    prompt_text = agent_prompt.render(scan_result, wrappers)
+    _write(prompt_text, out)
 
 
 # --- helpers ---------------------------------------------------------------

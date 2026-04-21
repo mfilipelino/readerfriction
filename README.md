@@ -139,7 +139,23 @@ rf trace src/cli.py:main
 rf explain src/service.py:run_job
 rf report src/ --format markdown --out reader-friction.md
 rf diff src/ --base ../old-src/
+
+# Generate an AI-coding-agent prompt with DO / DO-NOT guardrails
+rf agent src/ --out .claude/refactor-prompt.md
 ```
+
+### Agent mode
+
+`rf agent <path>` produces a ready-to-paste prompt for an AI coding
+agent (Claude Code, Aider, Cursor). The prompt front-loads the
+forbidden shortcuts that would game the score without improving the
+code — collapsing files into one, merging functions into one giant
+function, adding no-op statements to defeat the classifier, renaming
+wrappers superficially, or hiding calls behind dynamic dispatch — and
+then lists the real refactors to apply (inline wrapper chains, reduce
+fan-out, tighten context width) with concrete targets from the current
+scan. See [`docs/limits-and-anti-gaming.md`](docs/limits-and-anti-gaming.md)
+for the reasoning behind every rule.
 
 ## Configure
 
