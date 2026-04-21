@@ -128,11 +128,14 @@ def test_req_902_python_only(repo_root: Path) -> None:
     # would suggest multi-language ambitions. Ignore cache artefacts.
     ignored_suffixes = {".py", ".pyc", ""}
     ignored_dirs = {"__pycache__"}
+    ignored_names = {"py.typed"}  # PEP 561 typing marker — Python-only signal
     other: list[Path] = []
     for path in src.rglob("*"):
         if not path.is_file():
             continue
         if ignored_dirs & set(path.parts):
+            continue
+        if path.name in ignored_names:
             continue
         if path.suffix in ignored_suffixes:
             continue

@@ -33,3 +33,19 @@ Imperative, present tense, short first line (≤ 72 chars). Reference relevant
 ## Code style
 
 `ruff` and `pyright` are authoritative. Run both before opening a PR.
+
+## Release process
+
+1. Bump `version` in `pyproject.toml` and add a `## [x.y.z] - YYYY-MM-DD`
+   entry to `CHANGELOG.md`. Commit on `main`.
+2. `uv build` locally and run `uvx twine check dist/*` to sanity-check
+   metadata.
+3. Tag: `git tag -a v0.1.0 -m "v0.1.0" && git push --tags`.
+4. The `release` workflow builds the sdist + wheel, publishes to PyPI via
+   [trusted publishing](https://docs.pypi.org/trusted-publishers/), and
+   attaches the artifacts to a GitHub Release.
+
+Trusted publishing requires a one-time PyPI configuration: add this repo as
+a trusted publisher for the `readerfriction` project with environment name
+`pypi` (matches `.github/workflows/release.yml`). No API tokens live in the
+repo.

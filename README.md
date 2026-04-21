@@ -47,6 +47,17 @@ Clean flows score close to zero; wrapper-heavy flows score high.
 ## Install
 
 ```bash
+# from PyPI (once released)
+pip install readerfriction
+uv pip install readerfriction
+
+# as a global CLI tool
+uv tool install readerfriction
+
+# from GitHub (latest main)
+pip install git+https://github.com/mfilipelino/readerfriction.git
+
+# editable, from a local clone
 uv pip install -e .
 ```
 

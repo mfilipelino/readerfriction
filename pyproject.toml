@@ -7,17 +7,31 @@ name = "readerfriction"
 version = "0.1.0"
 description = "Measure navigational complexity in Python codebases."
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.11"
 authors = [{ name = "ReaderFriction contributors" }]
-keywords = ["complexity", "code-quality", "static-analysis", "navigation"]
+keywords = [
+    "code-quality",
+    "complexity",
+    "navigation",
+    "readability",
+    "static-analysis",
+    "wrapper-detection",
+]
 classifiers = [
     "Development Status :: 3 - Alpha",
-    "License :: OSI Approved :: MIT License",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Software Development :: Quality Assurance",
+    "Typing :: Typed",
 ]
 dependencies = [
     "typer>=0.12",
@@ -40,11 +54,30 @@ dev = [
 rf = "readerfriction.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/readerfriction/readerfriction"
-Issues = "https://github.com/readerfriction/readerfriction/issues"
+Homepage = "https://github.com/mfilipelino/readerfriction"
+Repository = "https://github.com/mfilipelino/readerfriction"
+Issues = "https://github.com/mfilipelino/readerfriction/issues"
+Changelog = "https://github.com/mfilipelino/readerfriction/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/mfilipelino/readerfriction/tree/main/docs"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/readerfriction"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/readerfriction",
+    "tests",
+    "spec",
+    "docs",
+    "scripts",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "CODE_OF_CONDUCT.md",
+    "SECURITY.md",
+    "pyproject.toml",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
