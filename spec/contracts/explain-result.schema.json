@@ -1,0 +1,113 @@
+{
+  "$defs": {
+    "FunctionRef": {
+      "additionalProperties": false,
+      "description": "Stable pointer to a function \u2014 the same function always hashes the same.",
+      "properties": {
+        "file": {
+          "title": "File",
+          "type": "string"
+        },
+        "lineno": {
+          "title": "Lineno",
+          "type": "integer"
+        },
+        "qualname": {
+          "title": "Qualname",
+          "type": "string"
+        }
+      },
+      "required": [
+        "qualname",
+        "file",
+        "lineno"
+      ],
+      "title": "FunctionRef",
+      "type": "object"
+    },
+    "WrapperClassification": {
+      "additionalProperties": false,
+      "properties": {
+        "is_wrapper": {
+          "title": "Is Wrapper",
+          "type": "boolean"
+        },
+        "matched_rules": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Matched Rules",
+          "type": "array"
+        },
+        "ref": {
+          "$ref": "#/$defs/FunctionRef"
+        },
+        "score": {
+          "title": "Score",
+          "type": "integer"
+        },
+        "threshold": {
+          "title": "Threshold",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "ref",
+        "is_wrapper",
+        "matched_rules",
+        "score",
+        "threshold"
+      ],
+      "title": "WrapperClassification",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "arg_count": {
+      "title": "Arg Count",
+      "type": "integer"
+    },
+    "callees": {
+      "items": {
+        "$ref": "#/$defs/FunctionRef"
+      },
+      "title": "Callees",
+      "type": "array"
+    },
+    "callers": {
+      "items": {
+        "$ref": "#/$defs/FunctionRef"
+      },
+      "title": "Callers",
+      "type": "array"
+    },
+    "classification": {
+      "$ref": "#/$defs/WrapperClassification"
+    },
+    "decorators": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Decorators",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "0.1",
+      "default": "0.1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "target": {
+      "$ref": "#/$defs/FunctionRef"
+    }
+  },
+  "required": [
+    "target",
+    "classification",
+    "arg_count",
+    "decorators"
+  ],
+  "title": "ExplainResult",
+  "type": "object"
+}

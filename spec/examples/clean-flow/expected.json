@@ -1,0 +1,121 @@
+{
+  "entrypoints": [
+    {
+      "metrics": {
+        "context_width": {
+          "detail": {},
+          "display": "1.00",
+          "name": "context_width",
+          "value": 1.0
+        },
+        "file_jumps": {
+          "detail": {},
+          "display": "0",
+          "name": "file_jumps",
+          "value": 0.0
+        },
+        "flow_fragmentation": {
+          "detail": {
+            "head_fan_out": "2",
+            "middle_extra_branches": "0"
+          },
+          "display": "2",
+          "name": "flow_fragmentation",
+          "value": 2.0
+        },
+        "pass_through_ratio": {
+          "detail": {},
+          "display": "0.000",
+          "name": "pass_through_ratio",
+          "value": 0.0
+        },
+        "thin_wrapper_count": {
+          "detail": {},
+          "display": "0",
+          "name": "thin_wrapper_count",
+          "value": 0.0
+        },
+        "trace_depth": {
+          "detail": {},
+          "display": "1",
+          "name": "trace_depth",
+          "value": 1.0
+        },
+        "wrapper_depth": {
+          "detail": {},
+          "display": "0",
+          "name": "wrapper_depth",
+          "value": 0.0
+        }
+      },
+      "path": [
+        {
+          "file": "project/app.py",
+          "lineno": 18,
+          "qualname": "app.main"
+        },
+        {
+          "file": "project/app.py",
+          "lineno": 1,
+          "qualname": "app.parse"
+        }
+      ],
+      "ref": {
+        "file": "project/app.py",
+        "lineno": 18,
+        "qualname": "app.main"
+      },
+      "score": 8
+    }
+  ],
+  "parse_errors": [],
+  "root": "<clean-flow>",
+  "scanned_files": 1,
+  "schema_version": "0.1",
+  "score": 8,
+  "severity": "ok",
+  "summary": {
+    "context_width": {
+      "detail": {},
+      "display": "1.00",
+      "name": "context_width",
+      "value": 1.0
+    },
+    "file_jumps": {
+      "detail": {},
+      "display": "0",
+      "name": "file_jumps",
+      "value": 0.0
+    },
+    "flow_fragmentation": {
+      "detail": {},
+      "display": "2",
+      "name": "flow_fragmentation",
+      "value": 2.0
+    },
+    "pass_through_ratio": {
+      "detail": {},
+      "display": "0.000",
+      "name": "pass_through_ratio",
+      "value": 0.0
+    },
+    "thin_wrapper_count": {
+      "detail": {},
+      "display": "0",
+      "name": "thin_wrapper_count",
+      "value": 0.0
+    },
+    "trace_depth": {
+      "detail": {},
+      "display": "1",
+      "name": "trace_depth",
+      "value": 1.0
+    },
+    "wrapper_depth": {
+      "detail": {},
+      "display": "0",
+      "name": "wrapper_depth",
+      "value": 0.0
+    }
+  }
+}

@@ -1,0 +1,179 @@
+{
+  "$defs": {
+    "EntrypointResult": {
+      "additionalProperties": false,
+      "properties": {
+        "metrics": {
+          "additionalProperties": {
+            "$ref": "#/$defs/MetricResult"
+          },
+          "title": "Metrics",
+          "type": "object"
+        },
+        "path": {
+          "items": {
+            "$ref": "#/$defs/FunctionRef"
+          },
+          "title": "Path",
+          "type": "array"
+        },
+        "ref": {
+          "$ref": "#/$defs/FunctionRef"
+        },
+        "score": {
+          "title": "Score",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "ref",
+        "path",
+        "metrics",
+        "score"
+      ],
+      "title": "EntrypointResult",
+      "type": "object"
+    },
+    "FunctionRef": {
+      "additionalProperties": false,
+      "description": "Stable pointer to a function \u2014 the same function always hashes the same.",
+      "properties": {
+        "file": {
+          "title": "File",
+          "type": "string"
+        },
+        "lineno": {
+          "title": "Lineno",
+          "type": "integer"
+        },
+        "qualname": {
+          "title": "Qualname",
+          "type": "string"
+        }
+      },
+      "required": [
+        "qualname",
+        "file",
+        "lineno"
+      ],
+      "title": "FunctionRef",
+      "type": "object"
+    },
+    "MetricResult": {
+      "additionalProperties": false,
+      "properties": {
+        "detail": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Detail",
+          "type": "object"
+        },
+        "display": {
+          "title": "Display",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "value",
+        "display"
+      ],
+      "title": "MetricResult",
+      "type": "object"
+    },
+    "ParseError": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "title": "File",
+          "type": "string"
+        },
+        "line": {
+          "title": "Line",
+          "type": "integer"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "file",
+        "line",
+        "message"
+      ],
+      "title": "ParseError",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "entrypoints": {
+      "items": {
+        "$ref": "#/$defs/EntrypointResult"
+      },
+      "title": "Entrypoints",
+      "type": "array"
+    },
+    "parse_errors": {
+      "items": {
+        "$ref": "#/$defs/ParseError"
+      },
+      "title": "Parse Errors",
+      "type": "array"
+    },
+    "root": {
+      "title": "Root",
+      "type": "string"
+    },
+    "scanned_files": {
+      "title": "Scanned Files",
+      "type": "integer"
+    },
+    "schema_version": {
+      "const": "0.1",
+      "default": "0.1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "score": {
+      "title": "Score",
+      "type": "integer"
+    },
+    "severity": {
+      "enum": [
+        "ok",
+        "warn",
+        "error"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "summary": {
+      "additionalProperties": {
+        "$ref": "#/$defs/MetricResult"
+      },
+      "title": "Summary",
+      "type": "object"
+    }
+  },
+  "required": [
+    "root",
+    "scanned_files",
+    "entrypoints",
+    "summary",
+    "score",
+    "severity"
+  ],
+  "title": "ScanResult",
+  "type": "object"
+}

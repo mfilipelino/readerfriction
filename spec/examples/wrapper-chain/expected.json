@@ -1,0 +1,136 @@
+{
+  "entrypoints": [
+    {
+      "metrics": {
+        "context_width": {
+          "detail": {},
+          "display": "1.00",
+          "name": "context_width",
+          "value": 1.0
+        },
+        "file_jumps": {
+          "detail": {},
+          "display": "4",
+          "name": "file_jumps",
+          "value": 4.0
+        },
+        "flow_fragmentation": {
+          "detail": {
+            "head_fan_out": "1",
+            "middle_extra_branches": "0"
+          },
+          "display": "1",
+          "name": "flow_fragmentation",
+          "value": 1.0
+        },
+        "pass_through_ratio": {
+          "detail": {},
+          "display": "0.800",
+          "name": "pass_through_ratio",
+          "value": 0.8
+        },
+        "thin_wrapper_count": {
+          "detail": {},
+          "display": "4",
+          "name": "thin_wrapper_count",
+          "value": 4.0
+        },
+        "trace_depth": {
+          "detail": {},
+          "display": "4",
+          "name": "trace_depth",
+          "value": 4.0
+        },
+        "wrapper_depth": {
+          "detail": {},
+          "display": "4",
+          "name": "wrapper_depth",
+          "value": 4.0
+        }
+      },
+      "path": [
+        {
+          "file": "project/cli.py",
+          "lineno": 4,
+          "qualname": "cli.main"
+        },
+        {
+          "file": "project/handlers.py",
+          "lineno": 4,
+          "qualname": "handlers.handle"
+        },
+        {
+          "file": "project/services.py",
+          "lineno": 4,
+          "qualname": "services.run"
+        },
+        {
+          "file": "project/repos.py",
+          "lineno": 4,
+          "qualname": "repos.fetch"
+        },
+        {
+          "file": "project/db.py",
+          "lineno": 4,
+          "qualname": "db.query"
+        }
+      ],
+      "ref": {
+        "file": "project/cli.py",
+        "lineno": 4,
+        "qualname": "cli.main"
+      },
+      "score": 44
+    }
+  ],
+  "parse_errors": [],
+  "root": "<wrapper-chain>",
+  "scanned_files": 5,
+  "schema_version": "0.1",
+  "score": 44,
+  "severity": "error",
+  "summary": {
+    "context_width": {
+      "detail": {},
+      "display": "1.00",
+      "name": "context_width",
+      "value": 1.0
+    },
+    "file_jumps": {
+      "detail": {},
+      "display": "4",
+      "name": "file_jumps",
+      "value": 4.0
+    },
+    "flow_fragmentation": {
+      "detail": {},
+      "display": "1",
+      "name": "flow_fragmentation",
+      "value": 1.0
+    },
+    "pass_through_ratio": {
+      "detail": {},
+      "display": "0.800",
+      "name": "pass_through_ratio",
+      "value": 0.8
+    },
+    "thin_wrapper_count": {
+      "detail": {},
+      "display": "4",
+      "name": "thin_wrapper_count",
+      "value": 4.0
+    },
+    "trace_depth": {
+      "detail": {},
+      "display": "4",
+      "name": "trace_depth",
+      "value": 4.0
+    },
+    "wrapper_depth": {
+      "detail": {},
+      "display": "4",
+      "name": "wrapper_depth",
+      "value": 4.0
+    }
+  }
+}

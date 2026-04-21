@@ -1,0 +1,89 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "readerfriction"
+version = "0.1.0"
+description = "Measure navigational complexity in Python codebases."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+authors = [{ name = "ReaderFriction contributors" }]
+keywords = ["complexity", "code-quality", "static-analysis", "navigation"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = [
+    "typer>=0.12",
+    "rich>=13.7",
+    "networkx>=3.2",
+    "pydantic>=2.6",
+    "libcst>=1.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.5",
+    "pyright>=1.1.360",
+    "jsonschema>=4.21",
+]
+
+[project.scripts]
+readerfriction = "readerfriction.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/readerfriction/readerfriction"
+Issues = "https://github.com/readerfriction/readerfriction/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/readerfriction"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "SIM", "RUF"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["N802", "N803"]
+"spec/examples/**" = ["ALL"]
+# Typer idioms: option/argument defaults are calls, and StrEnum is 3.11+ only.
+"src/readerfriction/cli.py" = ["B008", "UP042", "A002"]
+
+[tool.pyright]
+include = ["src"]
+exclude = ["spec/examples/**", "tests/fixtures/**"]
+pythonVersion = "3.11"
+typeCheckingMode = "standard"
+reportMissingImports = "error"
+
+[tool.readerfriction]
+exclude = []
+wrapper_threshold = 6
+
+[tool.readerfriction.weights]
+trace_depth = 2
+file_jumps = 3
+wrapper_depth = 3
+thin_wrapper_count = 2
+context_width = 2
+flow_fragmentation = 2
+
+[tool.readerfriction.thresholds]
+warn = 15
+error = 30

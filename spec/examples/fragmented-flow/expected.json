@@ -1,0 +1,121 @@
+{
+  "entrypoints": [
+    {
+      "metrics": {
+        "context_width": {
+          "detail": {},
+          "display": "1.00",
+          "name": "context_width",
+          "value": 1.0
+        },
+        "file_jumps": {
+          "detail": {},
+          "display": "1",
+          "name": "file_jumps",
+          "value": 1.0
+        },
+        "flow_fragmentation": {
+          "detail": {
+            "head_fan_out": "6",
+            "middle_extra_branches": "0"
+          },
+          "display": "6",
+          "name": "flow_fragmentation",
+          "value": 6.0
+        },
+        "pass_through_ratio": {
+          "detail": {},
+          "display": "0.000",
+          "name": "pass_through_ratio",
+          "value": 0.0
+        },
+        "thin_wrapper_count": {
+          "detail": {},
+          "display": "0",
+          "name": "thin_wrapper_count",
+          "value": 0.0
+        },
+        "trace_depth": {
+          "detail": {},
+          "display": "1",
+          "name": "trace_depth",
+          "value": 1.0
+        },
+        "wrapper_depth": {
+          "detail": {},
+          "display": "0",
+          "name": "wrapper_depth",
+          "value": 0.0
+        }
+      },
+      "path": [
+        {
+          "file": "project/main.py",
+          "lineno": 7,
+          "qualname": "main.main"
+        },
+        {
+          "file": "project/loaders.py",
+          "lineno": 10,
+          "qualname": "loaders.load_accounts"
+        }
+      ],
+      "ref": {
+        "file": "project/main.py",
+        "lineno": 7,
+        "qualname": "main.main"
+      },
+      "score": 19
+    }
+  ],
+  "parse_errors": [],
+  "root": "<fragmented-flow>",
+  "scanned_files": 5,
+  "schema_version": "0.1",
+  "score": 19,
+  "severity": "warn",
+  "summary": {
+    "context_width": {
+      "detail": {},
+      "display": "1.00",
+      "name": "context_width",
+      "value": 1.0
+    },
+    "file_jumps": {
+      "detail": {},
+      "display": "1",
+      "name": "file_jumps",
+      "value": 1.0
+    },
+    "flow_fragmentation": {
+      "detail": {},
+      "display": "6",
+      "name": "flow_fragmentation",
+      "value": 6.0
+    },
+    "pass_through_ratio": {
+      "detail": {},
+      "display": "0.000",
+      "name": "pass_through_ratio",
+      "value": 0.0
+    },
+    "thin_wrapper_count": {
+      "detail": {},
+      "display": "0",
+      "name": "thin_wrapper_count",
+      "value": 0.0
+    },
+    "trace_depth": {
+      "detail": {},
+      "display": "1",
+      "name": "trace_depth",
+      "value": 1.0
+    },
+    "wrapper_depth": {
+      "detail": {},
+      "display": "0",
+      "name": "wrapper_depth",
+      "value": 0.0
+    }
+  }
+}
