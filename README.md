@@ -29,6 +29,73 @@ It is complementary to `complexipy`:
 - **Pass-Through Ratio** — wrappers / functions in scope
 
 Formal definitions: [`spec/metrics.md`](spec/metrics.md).
+Worked examples: [`docs/metrics-by-example.md`](docs/metrics-by-example.md).
+
+### Metric snippets at a glance
+
+Minimum code, maximum clarity — see
+[`docs/metrics-by-example.md`](docs/metrics-by-example.md) for the full
+walk-through.
+
+**trace_depth** — hops before meaningful logic.
+
+```
+main  →  handle  →  run  →  fetch  →  query   ← meaningful leaf
+        (wrap)   (wrap) (wrap)     (non-wrapper)
+
+len(path) - 1 = 5 - 1 = 4
+```
+
+**file_jumps** — distinct source files on the path minus 1.
+
+```
+cli.py → handlers.py → services.py → repos.py → db.py
+|{files}| - 1 = 5 - 1 = 4
+```
+
+**wrapper_depth** — longest consecutive run of thin wrappers on the path.
+
+```
+W(main)=T  W(handle)=T  W(run)=T  W(fetch)=T  W(query)=F
+         run of 4 Trues → wrapper_depth = 4
+```
+
+**thin_wrapper_count** — total wrappers on the path: 4 (same example).
+
+**flow_fragmentation** — branching pressure along the main path.
+
+```python
+# main calls six sibling helpers, no chain:
+def main(path):
+    users    = load_users(path)
+    accounts = load_accounts(path)
+    validate_users(users)
+    validate_accounts(accounts)
+    records  = merge_records(users, accounts)
+    emit_report(records)
+
+fan_out(main) = 6   →  flow_fragmentation = 6
+```
+
+**context_width** — mean of `arg_count + distinct self.* attrs` along the
+path. Tiny wrappers with one arg each give `1.00`; a method touching
+three `self.*` attrs with two args contributes `5` for that hop.
+
+**pass_through_ratio** — project-level wrapper density:
+
+```
+4 wrappers / 5 functions = 0.800   # reported, not scored
+```
+
+**score** — weighted sum (weights configurable):
+
+```
+score = 2·4 + 3·4 + 3·4 + 2·4 + 2·1 + 2·1 = 44   # wrapper-chain
+score = 2·1 + 3·0 + 3·0 + 2·0 + 2·1 + 2·2 =  8   # clean-flow
+```
+
+A 5.5× gap between fixtures that are just a few files each — which is
+exactly the signal `rf` is built to surface.
 
 ## A tiny example
 

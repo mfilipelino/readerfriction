@@ -1,6 +1,8 @@
 # Metrics (concise)
 
-Full formal definitions live in [`spec/metrics.md`](../spec/metrics.md).
+- Formal definitions: [`spec/metrics.md`](../spec/metrics.md).
+- Worked examples for every metric: [`metrics-by-example.md`](metrics-by-example.md).
+
 This page is a quick reference.
 
 - **trace_depth** — hops on the chosen path from an entrypoint to the first
