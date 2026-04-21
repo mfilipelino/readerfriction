@@ -1,4 +1,7 @@
-# ReaderFriction
+# ReaderFriction — `rf`
+
+**rf** = **r**eader **f**riction. The CLI command `rf` is short for
+`ReaderFriction`; the Python package and PyPI name remain `readerfriction`.
 
 > Most code-quality tools tell you whether a function is complex.
 > ReaderFriction tells you whether the main path is painful to follow.
@@ -99,6 +102,53 @@ computes the seven metrics above.
 ReaderFriction does **not** run your code and does **not** chase dynamic
 dispatch. v0.1 non-goals are listed in
 [`spec/requirements.md`](spec/requirements.md) (REQ-900..REQ-903).
+
+## Background
+
+ReaderFriction's metrics build on decades of empirical work on code
+readability, comprehension, and complexity. These are the sources that
+shaped the design; each bullet notes which metric it supports.
+
+- **Buse, R. P. L., & Weimer, W. R. (2010).** *Learning a Metric for Code
+  Readability.* IEEE Transactions on Software Engineering 36(4): 546–558.
+  [doi:10.1109/TSE.2009.70](https://doi.org/10.1109/TSE.2009.70) — empirical
+  evidence that readability is measurable and correlates with defects;
+  supports **context width** and the overall friction-score approach.
+- **Scalabrino, S., Bavota, G., Vendome, C., Linares-Vásquez, M.,
+  Poshyvanyk, D., & Oliveto, R. (2017 / 2019).** *Automatically Assessing
+  Code Understandability: How Far Are We?* ASE 2017 (extended in IEEE TSE
+  2019).
+  [ASE preprint PDF](https://www.cs.wm.edu/~denys/pubs/ASE'17-Readability.pdf) —
+  shows no single metric captures understandability; motivates a
+  **composite** score instead of a single number.
+- **Campbell, G. A. (2018).** *Cognitive Complexity: A new way of measuring
+  understandability.* SonarSource white paper (also in Proc. TechDebt 2018,
+  [doi:10.1145/3194164.3194186](https://doi.org/10.1145/3194164.3194186)).
+  [PDF](https://www.sonarsource.com/docs/CognitiveComplexity.pdf) — direct
+  inspiration for **flow fragmentation** and for taking nesting / branching
+  into account when they affect reading, not just control flow.
+- **Siegmund, J., Kästner, C., Apel, S., Parnin, C., Bethmann, A., Leich,
+  T., Saake, G., & Brechmann, A. (2014).** *Understanding Understanding
+  Source Code with Functional Magnetic Resonance Imaging.* ICSE 2014:
+  378–389. [doi:10.1145/2568225.2568252](https://doi.org/10.1145/2568225.2568252) —
+  fMRI evidence that code reading activates working-memory regions;
+  grounds **context width** and **trace depth** as cognitive-load proxies.
+- **LaToza, T. D., Venolia, G., & DeLine, R. (2006).** *Maintaining Mental
+  Models: A Study of Developer Work Habits.* ICSE 2006: 492–501.
+  [doi:10.1145/1134285.1134355](https://doi.org/10.1145/1134285.1134355) —
+  developers report real pain tracing across modules; justifies **file
+  jumps** and **wrapper depth** as first-class signals.
+- **McCabe, T. J. (1976).** *A Complexity Measure.* IEEE Transactions on
+  Software Engineering SE-2(4): 308–320.
+  [doi:10.1109/TSE.1976.233837](https://doi.org/10.1109/TSE.1976.233837) —
+  the original local-complexity metric ReaderFriction *complements* rather
+  than replaces; cyclomatic complexity stops at function boundaries, `rf`
+  picks up where it leaves off.
+- **Fowler, M. (2018).** *Refactoring: Improving the Design of Existing
+  Code* (2nd ed.), Addison-Wesley. See the *Inline Function* refactoring.
+  [Book site](https://refactoring.com/) — practitioner grounding for the
+  **thin-wrapper** heuristic: a function that does nothing but forward is
+  a candidate to inline.
 
 ## Contributing
 
