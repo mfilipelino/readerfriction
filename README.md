@@ -33,7 +33,7 @@ Given `cli → handler → service → repo → db`, where the middle three are
 thin wrappers:
 
 ```
-$ readerfriction scan spec/examples/wrapper-chain/project
+$ rf scan spec/examples/wrapper-chain/project
 score            29
 trace_depth       4   hops
 file_jumps        4   files
@@ -53,11 +53,11 @@ uv pip install -e .
 ## Quickstart
 
 ```bash
-readerfriction scan src/
-readerfriction trace src/cli.py:main
-readerfriction explain src/service.py:run_job
-readerfriction report src/ --format markdown --out reader-friction.md
-readerfriction diff src/ --base ../old-src/
+rf scan src/
+rf trace src/cli.py:main
+rf explain src/service.py:run_job
+rf report src/ --format markdown --out reader-friction.md
+rf diff src/ --base ../old-src/
 ```
 
 ## Configure

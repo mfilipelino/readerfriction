@@ -23,7 +23,7 @@ def test_req_001_installable(repo_root: Path) -> None:
 def test_req_002_console_script(repo_root: Path) -> None:
     pyproject = tomllib.loads((repo_root / "pyproject.toml").read_text())
     scripts = pyproject["project"]["scripts"]
-    assert scripts["readerfriction"] == "readerfriction.cli:app"
+    assert scripts["rf"] == "readerfriction.cli:app"
 
 
 def test_req_003_python_version(repo_root: Path) -> None:

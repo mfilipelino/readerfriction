@@ -17,7 +17,7 @@ labels: bug
 ## Command + output
 
 ```
-$ readerfriction scan ...
+$ rf scan ...
 ```
 
 ## Environment

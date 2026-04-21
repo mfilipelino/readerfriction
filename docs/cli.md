@@ -3,11 +3,11 @@
 Normative contract: [`spec/cli.md`](../spec/cli.md).
 
 ```
-readerfriction scan <path>          # metrics + summary
-readerfriction trace <file>:<func>  # chosen trace path
-readerfriction explain <file>:<func># wrapper classification detail
-readerfriction report <path>        # markdown / json / text report
-readerfriction diff <path> --base <other-path>
+rf scan <path>          # metrics + summary
+rf trace <file>:<func>  # chosen trace path
+rf explain <file>:<func># wrapper classification detail
+rf report <path>        # markdown / json / text report
+rf diff <path> --base <other-path>
 ```
 
 Global flags: `--format {text,json,markdown}`, `--out <file>`,

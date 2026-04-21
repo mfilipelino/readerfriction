@@ -37,7 +37,7 @@ dev = [
 ]
 
 [project.scripts]
-readerfriction = "readerfriction.cli:app"
+rf = "readerfriction.cli:app"
 
 [project.urls]
 Homepage = "https://github.com/readerfriction/readerfriction"

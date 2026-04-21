@@ -34,4 +34,4 @@ jobs:
       - name: Tests
         run: uv run pytest --cov=readerfriction --cov-report=term-missing
       - name: Smoke (wrapper-chain fixture)
-        run: uv run readerfriction scan spec/examples/wrapper-chain/project --format json
+        run: uv run rf scan spec/examples/wrapper-chain/project --format json

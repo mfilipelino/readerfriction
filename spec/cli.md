@@ -22,7 +22,7 @@ flow_fragmentation, context_width, pass_through_ratio}` and
 
 ---
 
-## `readerfriction scan <path>`
+## `rf scan <path>`
 
 Walks `<path>` and reports metrics for every detected entrypoint plus a
 project-level summary.
@@ -48,25 +48,25 @@ Output (JSON form):
 
 Exit codes: `0` success · `1` `--fail-on` triggered · `2` usage · `3` error.
 
-## `readerfriction trace <file>:<func>`
+## `rf trace <file>:<func>`
 
 Prints the chosen trace path from `<func>` as an entrypoint.
 
 JSON schema: `trace-result.schema.json`.
 
-## `readerfriction explain <file>:<func>`
+## `rf explain <file>:<func>`
 
 Per-function breakdown: wrapper classification rules, local arity, and
 contribution to the trace metrics.
 
 JSON schema: `explain-result.schema.json`.
 
-## `readerfriction report <path>`
+## `rf report <path>`
 
 Same data as `scan` but renders a human report. `--format markdown --out
 <file>` is the intended usage for PR comments.
 
-## `readerfriction diff <path> --base <ref> --head <ref>`
+## `rf diff <path> --base <ref> --head <ref>`
 
 v0.1 scope: `<ref>` is a local directory path (not a git ref). Full git-ref
 support is a 0.2 follow-up. Compares scan results between two paths and

@@ -23,7 +23,7 @@ from readerfriction.pipeline import scan_project
 from readerfriction.reports import json_report, markdown, text
 
 app = typer.Typer(
-    name="readerfriction",
+    name="rf",
     no_args_is_help=True,
     add_completion=False,
     help="Measure navigational complexity in Python codebases.",

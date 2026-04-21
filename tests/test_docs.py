@@ -19,7 +19,7 @@ METRICS = (
 def test_readme_mentions_all_commands(repo_root: Path) -> None:
     readme = (repo_root / "README.md").read_text()
     for cmd in COMMANDS:
-        assert f"readerfriction {cmd}" in readme or f"`{cmd}`" in readme
+        assert f"rf {cmd}" in readme or f"`{cmd}`" in readme
 
 
 def test_readme_mentions_all_metrics(repo_root: Path) -> None:
