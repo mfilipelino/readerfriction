@@ -217,6 +217,20 @@ shaped the design; each bullet notes which metric it supports.
   **thin-wrapper** heuristic: a function that does nothing but forward is
   a candidate to inline.
 
+## Limits & anti-gaming
+
+`rf` measures **structural indirection in the static call graph**. That
+is *correlated* with reader friction, not the same thing. Before using
+`rf` as a CI gate or an agent reward signal, read
+[`docs/limits-and-anti-gaming.md`](docs/limits-and-anti-gaming.md) — it
+documents concrete attacks (one-file rearrangement drops the score 27%
+on the fixture with no real improvement), explains why the signal isn't
+six independent axes, and proposes the validation work this tool would
+need before being treated as a cardinal quality metric.
+
+Summary: **use `rf` as a diagnostic, not a target.** Look at the
+breakdown with `rf explain`; don't optimise the aggregate score.
+
 ## Contributing
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md). Spec lives under [`spec/`](spec/)
