@@ -47,3 +47,9 @@ def test_req_011_help_all_commands(command: str) -> None:
 
 def test_package_version() -> None:
     assert readerfriction.__version__ == "0.1.0"
+
+
+def test_cli_version_flag() -> None:
+    result = runner.invoke(app, ["--version"])
+    assert result.exit_code == 0, result.output
+    assert f"readerfriction {readerfriction.__version__}" in result.output

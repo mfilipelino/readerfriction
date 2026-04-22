@@ -8,6 +8,7 @@ from pathlib import Path
 
 import typer
 
+from readerfriction import __version__
 from readerfriction.classify.wrappers import classify_function
 from readerfriction.config import Config, find_pyproject, load_config
 from readerfriction.graph.callgraph import build_call_graph
@@ -50,6 +51,25 @@ class OutputFormat(str, Enum):
     text = "text"
     json = "json"
     markdown = "markdown"
+
+
+def _version_callback(value: bool) -> None:
+    if value:
+        typer.echo(f"readerfriction {__version__}")
+        raise typer.Exit()
+
+
+@app.callback()
+def _main(
+    version: bool = typer.Option(
+        False,
+        "--version",
+        callback=_version_callback,
+        is_eager=True,
+        help="Show the installed ReaderFriction version and exit.",
+    ),
+) -> None:
+    """Root callback; only hosts the --version flag."""
 
 
 FAIL_ON_PATTERN = re.compile(
