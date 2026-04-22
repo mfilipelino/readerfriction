@@ -17,6 +17,34 @@ TRIVIAL_CALLEES: frozenset[str] = frozenset(
     }
 )
 
+# Telemetry callees — calls to these names are observational side-effects
+# (logging / metrics / tracing), not substantive logic. They do NOT disqualify
+# a function from being a thin wrapper. Matching is on the *final* name of a
+# call (so both ``log(x)`` and ``logger.info(x)`` match via ``info``/``log``).
+#
+# This list is the fix for Attack C (see docs/limits-and-anti-gaming.md):
+# without it, adding a single ``logger.info`` line to a pass-through function
+# defeated W-02 (exactly one non-trivial call) and flipped three downstream
+# metrics.
+#
+# The list is deliberately conservative — only names that are unambiguous
+# telemetry methods in standard Python tooling (stdlib logging, loguru,
+# prometheus_client, OpenTelemetry, statsd). Project-specific telemetry names
+# can be added via ``[tool.readerfriction.telemetry_callees]``.
+TELEMETRY_CALLEES: frozenset[str] = frozenset(
+    {
+        # stdlib logging / loguru method names
+        "log", "info", "debug", "warning", "warn",
+        "error", "critical", "exception", "fatal",
+        # prometheus_client / statsd counters + histograms
+        "inc", "incr", "increment", "observe",
+        # OpenTelemetry span API
+        "record_exception", "add_event", "set_attribute", "set_tag",
+        # stdout debug
+        "pprint",
+    }
+)
+
 ALLOWED_DECORATORS: frozenset[str] = frozenset(
     {
         "staticmethod",
@@ -49,7 +77,13 @@ ALL_RULES: tuple[str, ...] = (
 )
 
 
-DISQUALIFIERS: frozenset[str] = frozenset({"W-04", "W-05", "W-06", "W-07"})
+DISQUALIFIERS: frozenset[str] = frozenset({"W-02", "W-04", "W-05", "W-06", "W-07"})
+# W-02 is a disqualifier because "exactly one non-trivial call" is the
+# definition of a pass-through wrapper. Zero non-trivial calls → there's
+# nothing to pass through; two or more → the function is doing more than
+# one thing. Neither shape is a wrapper. (Partial fix for Attack C — without
+# this, a function with a real business side effect could still squeak in
+# at exactly 6/8 rules. See docs/limits-and-anti-gaming.md.)
 
 
 def classify_function(
@@ -157,7 +191,16 @@ def _collect_calls(body: list[ast.stmt]) -> list[ast.Call]:
 
 
 def _is_trivial(call: ast.Call) -> bool:
-    return _call_simple_name(call) in TRIVIAL_CALLEES
+    """True if the call is a constructor/cast or a known telemetry side-effect.
+
+    Telemetry calls (logger.info, counter.inc, span.set_attribute, …) are
+    observational — they do not represent substantive business logic, so they
+    should not prevent a function from being classified as a thin wrapper.
+    Fix for Attack C in docs/limits-and-anti-gaming.md.
+    """
+
+    name = _call_simple_name(call)
+    return name in TRIVIAL_CALLEES or name in TELEMETRY_CALLEES
 
 
 def _call_simple_name(call: ast.Call) -> str:
@@ -310,6 +353,7 @@ def _rule_08_args_one_to_one(
 __all__ = [
     "ALLOWED_DECORATORS",
     "ALL_RULES",
+    "TELEMETRY_CALLEES",
     "TRIVIAL_CALLEES",
     "VALIDATION_NAMES",
     "classify_function",

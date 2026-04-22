@@ -153,12 +153,27 @@ def _classify(source: str, *, threshold: int = 6):
             False,
         ),
         (
-            "expr_call_no_return",
+            "expr_call_no_return_with_business_side_effect",
             """
-            def log(msg):
+            def persist(x):
+                db.save(x)
+            """,
+            # Call-only function that performs exactly one substantive
+            # side effect is a wrapper around that side effect — inlining
+            # it is transparent.
+            True,
+        ),
+        (
+            "telemetry_only_is_not_a_wrapper",
+            """
+            def noise(msg):
                 logger.info(msg)
             """,
-            True,
+            # A function whose only call is telemetry has ZERO non-trivial
+            # calls under the telemetry-exemption rule → W-02 fails → not
+            # a wrapper. Inlining it would lose the named log call, so
+            # it isn't transparent pass-through.
+            False,
         ),
         (
             "list_comp_transform",
@@ -174,6 +189,74 @@ def _classify(source: str, *, threshold: int = 6):
             def by_id(users):
                 return save({u.id: u for u in users})
             """,
+            False,
+        ),
+        # --- Attack C hardening: telemetry calls do not defeat W-02 ---
+        (
+            "logger_info_before_return_is_still_wrapper",
+            """
+            def handle(x):
+                logger.info("handling %s", x)
+                return run(x)
+            """,
+            True,
+        ),
+        (
+            "counter_inc_before_return_is_still_wrapper",
+            """
+            def handle(x):
+                counter.inc("handled")
+                return run(x)
+            """,
+            True,
+        ),
+        (
+            "bare_log_call_is_still_wrapper",
+            """
+            def handle(x):
+                log(x)
+                return run(x)
+            """,
+            True,
+        ),
+        (
+            "otel_set_attribute_is_still_wrapper",
+            """
+            def handle(x):
+                span.set_attribute("arg", x)
+                return run(x)
+            """,
+            True,
+        ),
+        (
+            "debug_print_is_still_wrapper",
+            """
+            def handle(x):
+                pprint(x)
+                return run(x)
+            """,
+            True,
+        ),
+        (
+            "two_telemetry_lines_still_wrapper",
+            """
+            def handle(x):
+                logger.debug(x)
+                counter.inc("handled")
+                return run(x)
+            """,
+            True,
+        ),
+        (
+            "business_side_effect_is_NOT_a_wrapper",
+            """
+            def handle(x):
+                db.save(x)
+                return run(x)
+            """,
+            # db.save is not telemetry — it's a real side effect. The
+            # function now has two non-trivial calls and real behaviour,
+            # so W-02 correctly fails.
             False,
         ),
     ],
