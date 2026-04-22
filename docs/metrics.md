@@ -8,6 +8,9 @@ This page is a quick reference.
 - **trace_depth** — hops on the chosen path from an entrypoint to the first
   meaningful (non-wrapper) function.
 - **file_jumps** — distinct files crossed on that path, minus 1.
+- **long_files** — count of files on the path whose total line count
+  exceeds `max_file_lines` (default 500). Catches "haystack" files
+  that `file_jumps` alone would score zero.
 - **wrapper_depth** — longest run of consecutive thin wrappers on the path.
 - **thin_wrapper_count** — number of wrappers on the path.
 - **flow_fragmentation** — branching at the entrypoint + extra branches along
@@ -23,6 +26,7 @@ The aggregate score:
 ```
 score = 2 * trace_depth
       + 3 * file_jumps
+      + 3 * long_files
       + 3 * wrapper_depth
       + 2 * thin_wrapper_count
       + 2 * context_width

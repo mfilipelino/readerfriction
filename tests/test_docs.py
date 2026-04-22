@@ -8,6 +8,7 @@ COMMANDS = ("scan", "trace", "explain", "report", "diff")
 METRICS = (
     "trace_depth",
     "file_jumps",
+    "long_files",
     "wrapper_depth",
     "thin_wrapper_count",
     "flow_fragmentation",
@@ -27,6 +28,7 @@ def test_readme_mentions_all_metrics(repo_root: Path) -> None:
     labels = {
         "trace_depth": ["trace depth", "Trace Depth"],
         "file_jumps": ["file jumps", "File Jumps"],
+        "long_files": ["long files", "Long Files"],
         "wrapper_depth": ["wrapper depth", "Wrapper Depth"],
         "thin_wrapper_count": ["thin wrapper", "Thin Wrapper"],
         "flow_fragmentation": ["flow fragmentation", "Flow Fragmentation"],

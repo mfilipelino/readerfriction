@@ -30,6 +30,7 @@
 | REQ-065| Core metrics                  | `metrics/context_width.py`                     | `test_req_065_context_width`                                 |
 | REQ-066| Core metrics                  | `metrics/pass_through_ratio.py`                | `test_req_066_pass_through_ratio`                            |
 | REQ-067| Core score                    | `metrics/score.py`                             | `test_req_067_aggregate_score`                               |
+| REQ-068| Anti-gaming (Attack A)        | `metrics/long_files.py`, `parser/ast_parse.py` | `test_req_068_long_files_counts_oversized_files` (+ 4 more)  |
 | REQ-070| Thin wrapper heuristic        | `classify/wrappers.py`                         | `test_req_070_wrapper_classifier`                            |
 | REQ-071| Thin wrapper heuristic        | `classify/wrappers.py`                         | `test_req_071_wrapper_rules_recorded`                        |
 | REQ-080| Core score                    | `config.py`                                    | `test_req_080_pyproject_loaded`                              |

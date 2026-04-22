@@ -52,6 +52,7 @@ def test_ac_5_computes_all_metrics(examples_root: Path) -> None:
     for key in (
         "trace_depth",
         "file_jumps",
+        "long_files",
         "wrapper_depth",
         "thin_wrapper_count",
         "flow_fragmentation",

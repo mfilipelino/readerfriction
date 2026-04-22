@@ -112,6 +112,7 @@ wrapper_threshold = 6
 [tool.readerfriction.weights]
 trace_depth = 2
 file_jumps = 3
+long_files = 3
 wrapper_depth = 3
 thin_wrapper_count = 2
 context_width = 2

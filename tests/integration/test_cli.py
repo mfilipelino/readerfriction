@@ -259,3 +259,30 @@ def test_agent_help_is_discoverable() -> None:
     assert result.exit_code == 0
     out = result.output
     assert "front-loads" in out or "NOT to do" in out or "gameable" in out
+
+
+def test_long_files_metric_fires_on_haystack(tmp_path: Path) -> None:
+    """End-to-end: a >500-line single file yields long_files >= 1 and
+    prompts the agent to split it.
+    """
+
+    project = tmp_path / "project"
+    project.mkdir()
+    lines: list[str] = []
+    for i in range(250):
+        lines.append(f"def helper_{i:03d}(x):")
+        lines.append(f"    return x + {i}")
+        lines.append("")
+    lines.append("def main(x):")
+    lines.append("    return helper_000(x)")
+    (project / "app.py").write_text("\n".join(lines) + "\n")
+
+    scan = _invoke("scan", str(project), "--format", "json")
+    assert scan.exit_code == 0
+    payload = json.loads(scan.stdout)
+    assert payload["summary"]["long_files"]["value"] >= 1
+
+    agent = _invoke("agent", str(project))
+    assert agent.exit_code == 0
+    assert "Split oversized file" in agent.stdout
+    assert "app.py" in agent.stdout

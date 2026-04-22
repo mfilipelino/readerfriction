@@ -10,6 +10,7 @@ _Scanned 1 file(s)._
 | --- | --- |
 | Trace depth | 1 |
 | File jumps | 0 |
+| Long files | 0 |
 | Wrapper depth | 0 |
 | Thin wrappers | 0 |
 | Flow fragmentation | 2 |
@@ -27,6 +28,7 @@ _Scanned 1 file(s)._
 | --- | --- |
 | Trace depth | 1 |
 | File jumps | 0 |
+| Long files | 0 |
 | Wrapper depth | 0 |
 | Thin wrappers | 0 |
 | Flow fragmentation | 2 |

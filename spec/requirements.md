@@ -95,6 +95,10 @@ Test IDs embed the requirement ID, e.g. `test_req_012_scan_emits_json`.
 - **REQ-065** — The system SHALL compute `context_width` per `metrics.md §6`.
 - **REQ-066** — The system SHALL compute `pass_through_ratio` per
   `metrics.md §7`.
+- **REQ-068** — The system SHALL compute `long_files` per
+  `metrics.md §7a`. The default ``max_file_lines`` is 500, overridable
+  via ``[tool.readerfriction].max_file_lines`` (REQ-082 extends to this
+  key).
 - **REQ-067** — The system SHALL compute the aggregate
   `reader_friction_score` using the weighted sum defined in `metrics.md §8`.
 

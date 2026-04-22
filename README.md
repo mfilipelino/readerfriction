@@ -22,6 +22,7 @@ It is complementary to `complexipy`:
 
 - **Trace Depth** — hops before meaningful logic starts
 - **File Jumps** — files the reader must cross
+- **Long Files** — haystack files on the path (too big to see at a glance)
 - **Wrapper Depth** — consecutive thin wrappers before real logic
 - **Thin Wrapper Count** — pass-through helpers on the path
 - **Flow Fragmentation** — how scattered the main path is
@@ -164,9 +165,12 @@ for the reasoning behind every rule.
 [tool.readerfriction]
 wrapper_threshold = 6
 
+max_file_lines = 500    # files larger than this count toward long_files
+
 [tool.readerfriction.weights]
 trace_depth = 2
 file_jumps = 3
+long_files = 3
 wrapper_depth = 3
 thin_wrapper_count = 2
 context_width = 2

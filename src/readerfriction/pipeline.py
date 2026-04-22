@@ -17,6 +17,7 @@ from readerfriction.metrics import (
     context_width,
     file_jumps,
     flow_fragmentation,
+    long_files,
     pass_through_ratio,
     thin_wrappers,
     trace_depth,
@@ -71,12 +72,15 @@ def scan_project_detail(
     cg = build_call_graph(modules)
     ir_by_ref, node_by_ref = _index_parsed(parsed_modules)
     wrappers = _classify_all(parsed_modules, config.wrapper_threshold, ir_by_ref)
+    file_line_counts: dict[str, int] = {pm.ir.path: pm.line_count for pm in parsed_modules}
 
     entries = detect_entrypoints(modules)
     entry_results: list[EntrypointResult] = []
     for entry in entries:
         entry_results.append(
-            _compute_entrypoint(entry, cg, wrappers, ir_by_ref, node_by_ref, config)
+            _compute_entrypoint(
+                entry, cg, wrappers, ir_by_ref, node_by_ref, file_line_counts, config
+            )
         )
 
     summary = _summarise(entry_results, cg, wrappers, ir_by_ref)
@@ -140,6 +144,7 @@ def _compute_entrypoint(
     wrappers: set[FunctionRef],
     ir_by_ref: dict[FunctionRef, FunctionIR],
     node_by_ref: dict[FunctionRef, ast.FunctionDef | ast.AsyncFunctionDef],
+    file_line_counts: dict[str, int],
     config: Config,
 ) -> EntrypointResult:
     path = select_trace_path(cg, entry, wrappers)
@@ -148,6 +153,9 @@ def _compute_entrypoint(
     metrics: dict[str, MetricResult] = {
         "trace_depth": trace_depth.compute(path),
         "file_jumps": file_jumps.compute(path),
+        "long_files": long_files.compute(
+            path, file_line_counts, max_file_lines=config.max_file_lines
+        ),
         "wrapper_depth": wrapper_depth.compute(path, wrappers),
         "thin_wrapper_count": thin_wrappers.compute(path, wrappers),
         "flow_fragmentation": flow_fragmentation.compute(cg, path),
@@ -177,12 +185,22 @@ def _summarise(
     all_in_scope = set(ir_by_ref.keys())
     if not entries:
         ptr = pass_through_ratio.compute(all_in_scope, wrappers)
-        return {"pass_through_ratio": ptr, "trace_depth": _zero("trace_depth"), "file_jumps": _zero("file_jumps"), "wrapper_depth": _zero("wrapper_depth"), "thin_wrapper_count": _zero("thin_wrapper_count"), "flow_fragmentation": _zero("flow_fragmentation"), "context_width": _zero("context_width")}
+        return {
+            "pass_through_ratio": ptr,
+            "trace_depth": _zero("trace_depth"),
+            "file_jumps": _zero("file_jumps"),
+            "long_files": _zero("long_files"),
+            "wrapper_depth": _zero("wrapper_depth"),
+            "thin_wrapper_count": _zero("thin_wrapper_count"),
+            "flow_fragmentation": _zero("flow_fragmentation"),
+            "context_width": _zero("context_width"),
+        }
 
     aggregated: dict[str, MetricResult] = {}
     for key in (
         "trace_depth",
         "file_jumps",
+        "long_files",
         "wrapper_depth",
         "thin_wrapper_count",
         "flow_fragmentation",

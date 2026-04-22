@@ -12,11 +12,16 @@ from readerfriction.utils.paths import module_name_for
 
 @dataclass(frozen=True)
 class ParsedModule:
-    """Carrier bundling the IR with the original AST, used by later stages."""
+    """Carrier bundling the IR with the original AST, used by later stages.
+
+    ``line_count`` is recorded at parse time so the ``long_files`` metric
+    (REQ-068) does not need to re-read files from disk.
+    """
 
     ir: ModuleIR
     tree: ast.Module
     function_nodes: dict[str, ast.FunctionDef | ast.AsyncFunctionDef]
+    line_count: int
 
 
 def parse_file(path: Path, root: Path) -> ParsedModule:
@@ -46,8 +51,10 @@ def parse_file(path: Path, root: Path) -> ParsedModule:
             ),
             tree=ast.Module(body=[], type_ignores=[]),
             function_nodes={},
+            line_count=0,
         )
 
+    line_count = len(source.splitlines())
     functions, function_nodes = _extract_functions(tree, module_name, path)
     has_main_guard, main_calls = _inspect_main_guard(tree)
     imports = _collect_imports(tree)
@@ -60,7 +67,12 @@ def parse_file(path: Path, root: Path) -> ParsedModule:
         main_guard_calls=main_calls,
         imports=imports,
     )
-    return ParsedModule(ir=ir, tree=tree, function_nodes=function_nodes)
+    return ParsedModule(
+        ir=ir,
+        tree=tree,
+        function_nodes=function_nodes,
+        line_count=line_count,
+    )
 
 
 def _extract_functions(

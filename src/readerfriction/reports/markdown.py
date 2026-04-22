@@ -9,6 +9,7 @@ from readerfriction.models import ScanResult
 METRIC_DISPLAY_ORDER: tuple[str, ...] = (
     "trace_depth",
     "file_jumps",
+    "long_files",
     "wrapper_depth",
     "thin_wrapper_count",
     "flow_fragmentation",
@@ -19,6 +20,7 @@ METRIC_DISPLAY_ORDER: tuple[str, ...] = (
 METRIC_LABELS: dict[str, str] = {
     "trace_depth": "Trace depth",
     "file_jumps": "File jumps",
+    "long_files": "Long files",
     "wrapper_depth": "Wrapper depth",
     "thin_wrapper_count": "Thin wrappers",
     "flow_fragmentation": "Flow fragmentation",

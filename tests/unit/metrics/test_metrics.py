@@ -80,6 +80,7 @@ def test_req_067_aggregate_score() -> None:
     metrics = {
         "trace_depth": MetricResult(name="trace_depth", value=4, display="4"),
         "file_jumps": MetricResult(name="file_jumps", value=3, display="3"),
+        "long_files": MetricResult(name="long_files", value=0, display="0"),
         "wrapper_depth": MetricResult(name="wrapper_depth", value=3, display="3"),
         "thin_wrapper_count": MetricResult(name="thin_wrapper_count", value=3, display="3"),
         "context_width": MetricResult(name="context_width", value=2, display="2"),
@@ -90,8 +91,76 @@ def test_req_067_aggregate_score() -> None:
         ),
     }
     total = score_module.compute(metrics, Config().weights)
-    # 2*4 + 3*3 + 3*3 + 2*3 + 2*2 + 2*1 = 8+9+9+6+4+2 = 38
+    # 2*4 + 3*3 + 3*0 + 3*3 + 2*3 + 2*2 + 2*1 = 8+9+0+9+6+4+2 = 38
     assert total == 38
+
+
+# --- REQ-068 long_files ------------------------------------------------
+
+
+def test_req_068_long_files_counts_oversized_files() -> None:
+    from readerfriction.metrics import long_files
+    path = [
+        FunctionRef(qualname="m.a", file="/p/a.py", lineno=1),
+        FunctionRef(qualname="m.b", file="/p/b.py", lineno=1),
+        FunctionRef(qualname="m.c", file="/p/c.py", lineno=1),
+    ]
+    line_counts = {"/p/a.py": 100, "/p/b.py": 1200, "/p/c.py": 700}
+    result = long_files.compute(path, line_counts, max_file_lines=500)
+    assert result.value == 2
+    assert "b.py:1200" in result.detail["files"]
+    assert "c.py:700" in result.detail["files"]
+
+
+def test_req_068_long_files_zero_when_all_under_threshold() -> None:
+    from readerfriction.metrics import long_files
+    path = [FunctionRef(qualname="m.a", file="/p/a.py", lineno=1)]
+    result = long_files.compute(path, {"/p/a.py": 100}, max_file_lines=500)
+    assert result.value == 0
+    assert result.display == "0"
+    assert "files" not in result.detail
+
+
+def test_req_068_long_files_threshold_configurable() -> None:
+    from readerfriction.metrics import long_files
+    path = [FunctionRef(qualname="m.a", file="/p/a.py", lineno=1)]
+    line_counts = {"/p/a.py": 600}
+    assert long_files.compute(path, line_counts, max_file_lines=500).value == 1
+    assert long_files.compute(path, line_counts, max_file_lines=1000).value == 0
+
+
+def test_req_068_long_files_empty_path_returns_zero() -> None:
+    from readerfriction.metrics import long_files
+    result = long_files.compute([], {}, max_file_lines=500)
+    assert result.value == 0
+
+
+def test_req_068_long_files_closes_attack_a(tmp_path: Path) -> None:
+    """Empirical: a one-file project with a huge app.py does not score zero."""
+
+    project = tmp_path / "project"
+    project.mkdir()
+    lines: list[str] = []
+    for i in range(60):
+        lines.append(f"def helper_{i:02d}(x):")
+        lines.append(f"    return x + {i}")
+        lines.append("")
+    lines.append("def main(x):")
+    lines.append("    return helper_00(x)")
+    (project / "app.py").write_text("\n".join(lines) + "\n")
+
+    # Regenerate with 200 helpers so the file is well over 500 lines.
+    lines = []
+    for i in range(200):
+        lines.append(f"def helper_{i:03d}(x):")
+        lines.append(f"    return x + {i}")
+        lines.append("")
+    lines.append("def main(x):")
+    lines.append("    return helper_000(x)")
+    (project / "app.py").write_text("\n".join(lines) + "\n")
+
+    result = scan_project(project, Config())
+    assert result.summary["long_files"].value >= 1
 
 
 def test_wrapper_chain_score_higher_than_clean(examples_root: Path) -> None:

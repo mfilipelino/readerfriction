@@ -26,6 +26,7 @@ class MetricWeights(BaseModel):
 
     trace_depth: int = 2
     file_jumps: int = 3
+    long_files: int = 3
     wrapper_depth: int = 3
     thin_wrapper_count: int = 2
     context_width: int = 2
@@ -44,6 +45,11 @@ class Config(BaseModel):
 
     exclude: list[str] = Field(default_factory=list)
     wrapper_threshold: int = 6
+    # Files on the trace path with more lines than this are counted as
+    # "long files" — a haystack signal for the `long_files` metric. Default
+    # 500 lines matches common style-guide ceilings (Google: 400; typical
+    # Python: 500). See spec/metrics.md §8.
+    max_file_lines: int = 500
     weights: MetricWeights = Field(default_factory=MetricWeights)
     thresholds: Thresholds = Field(default_factory=Thresholds)
 

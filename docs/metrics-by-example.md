@@ -103,6 +103,55 @@ def main(raw):
 
 ---
 
+## 2a. `long_files` — oversized files on the path
+
+> **Formula:** `long_files = |{f ∈ files(P*) : line_count(f) > max_file_lines}|`
+> (default `max_file_lines = 500`, configurable)
+
+This metric exists to close the "collapse everything into one big
+file" gaming attack that `file_jumps` alone cannot see. A 2000-line
+haystack is one file — `file_jumps` = 0 — but it's a haystack.
+
+**Healthy case** (wrapper-chain fixture): every file is short.
+
+```python
+# cli.py             ~10 lines
+# handlers.py        ~5 lines
+# services.py        ~5 lines
+# repos.py           ~5 lines
+# db.py              ~10 lines
+
+long_files = 0   # nothing exceeds 500 lines
+```
+
+**Attack A case** (all 5 files concatenated into one `app.py`):
+
+```python
+# Suppose the original 5 modules were meaningful size, so the
+# concatenated app.py is ~800 lines:
+# app.py             ~800 lines
+
+long_files = 1   # app.py > 500 lines → counts as one oversized file
+```
+
+Note that `file_jumps` simultaneously dropped to 0 because the path no
+longer crosses files. The `long_files` score penalty is designed to
+roughly *compensate* for that `file_jumps` reduction: the reader still
+has the same navigation burden; `rf` now says so.
+
+**Legitimately long file case** — a 600-line parser in its own module.
+`long_files` will fire here even though the file is intentional. This
+is a judgment call for the project; you can raise `max_file_lines` in
+`pyproject.toml` or ignore the metric for projects where big files are
+intentional.
+
+**What it tells you:** if `long_files ≥ 1` on an entrypoint's path,
+you have at least one file the reader cannot hold in their head at a
+glance. Either split it along a natural seam or deliberately accept
+the cost.
+
+---
+
 ## 3. `wrapper_depth` — longest run of consecutive wrappers
 
 > **Formula:** `wrapper_depth = max run of W(p)=True along P*`
@@ -266,6 +315,7 @@ wrappers (`0.5`), the codebase is probably a maze.
 > ```
 > score = 2 * trace_depth
 >       + 3 * file_jumps
+>       + 3 * long_files
 >       + 3 * wrapper_depth
 >       + 2 * thin_wrapper_count
 >       + 2 * context_width
@@ -279,19 +329,21 @@ Plugging in the wrapper-chain numbers:
 ```python
 score = 2 * 4   # trace_depth
       + 3 * 4   # file_jumps
+      + 3 * 0   # long_files       (all files short)
       + 3 * 4   # wrapper_depth
       + 2 * 4   # thin_wrapper_count
       + 2 * 1   # context_width  (rounded 1.00 → 1)
       + 2 * 1   # flow_fragmentation
-      = 8 + 12 + 12 + 8 + 2 + 2
+      = 8 + 12 + 0 + 12 + 8 + 2 + 2
       = 44
 ```
 
 And the clean-flow fixture, which has `trace_depth=1, file_jumps=0,
-wrapper_depth=0, thin_wrapper_count=0, context_width=1, flow_fragmentation=2`:
+long_files=0, wrapper_depth=0, thin_wrapper_count=0, context_width=1,
+flow_fragmentation=2`:
 
 ```python
-score = 2*1 + 3*0 + 3*0 + 2*0 + 2*1 + 2*2 = 8
+score = 2*1 + 3*0 + 3*0 + 3*0 + 2*0 + 2*1 + 2*2 = 8
 ```
 
 A 5.5× gap between the two tells you exactly what you'd expect: the

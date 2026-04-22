@@ -13,10 +13,16 @@ exclude = ["tests/fixtures/*", "scripts/*"]
 # Wrapper heuristic
 wrapper_threshold = 6      # matches required out of 8 rules
 
+# Long-file detection (REQ-068) — files on the trace path with more lines
+# than this count toward the long_files metric. ~500 is a typical
+# style-guide ceiling; lower it for stricter codebases.
+max_file_lines = 500
+
 # Metric weights (used by reader_friction_score)
 [tool.readerfriction.weights]
 trace_depth         = 2
 file_jumps          = 3
+long_files          = 3
 wrapper_depth       = 3
 thin_wrapper_count  = 2
 context_width       = 2

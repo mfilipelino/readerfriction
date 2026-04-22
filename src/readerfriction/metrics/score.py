@@ -12,6 +12,7 @@ from readerfriction.models import MetricResult
 SCORED_METRICS: tuple[str, ...] = (
     "trace_depth",
     "file_jumps",
+    "long_files",
     "wrapper_depth",
     "thin_wrapper_count",
     "context_width",

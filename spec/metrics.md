@@ -73,6 +73,35 @@ context_width = Σ_{p ∈ P*} (arg_count(p) + distinct_self_attrs(p))
 Where `distinct_self_attrs(p)` is the count of distinct `self.<name>`
 attributes read or written inside `p` (methods only; 0 for free functions).
 
+## §7a long_files
+
+```
+long_files = |{f ∈ files(P*) : line_count(f) > max_file_lines}|
+```
+
+where `line_count(f)` is the total number of lines in the source file
+`f` (including blanks and comments — kept deterministic), and
+`files(P*)` is the set of distinct files crossed by the trace path.
+
+Default `max_file_lines = 500`. Configurable via
+`[tool.readerfriction].max_file_lines`.
+
+Edge cases:
+
+- IF `P*` is empty THEN `long_files = 0`.
+- A file that failed to parse is counted as having 0 lines (its
+  functions will not appear on any path, so it will not normally
+  contribute to this metric).
+
+Rationale: a file that does not comfortably fit on one screen is a
+reader-friction signal that `file_jumps` alone cannot detect. A single
+2000-line haystack file containing 10 functions scores zero on
+`file_jumps` (it is one file) but takes substantial effort to navigate.
+`long_files` makes this cost visible in the score. Specifically, this
+metric closes **Attack A** from `docs/limits-and-anti-gaming.md`
+(collapsing many files into one) at the `rf`-metric level rather than
+only via external tooling.
+
 ## §7 pass_through_ratio
 
 ```
@@ -89,6 +118,7 @@ Default weights (override via `[tool.readerfriction]`):
 ```
 score = 2 * trace_depth
       + 3 * file_jumps
+      + 3 * long_files
       + 3 * wrapper_depth
       + 2 * thin_wrapper_count
       + 2 * context_width

@@ -126,6 +126,11 @@ def _recommendations_for(
     fan_out = round(metrics["flow_fragmentation"].value)
     context = metrics["context_width"].value
     trace = round(metrics["trace_depth"].value)
+    long_file_metric = metrics.get("long_files")
+    long_file_count = round(long_file_metric.value) if long_file_metric else 0
+    long_files_detail = (
+        long_file_metric.detail.get("files", "") if long_file_metric else ""
+    )
 
     wrapper_names = [p.qualname for p in entry.path if p in wrappers]
     path_display = " → ".join(p.qualname for p in entry.path)
@@ -179,6 +184,21 @@ def _recommendations_for(
             f"of wrappers. Consider whether one of the intermediate "
             f"layers represents a genuine abstraction boundary; if not, "
             f"flatten it."
+        )
+
+    if long_file_count >= 1:
+        detail_suffix = f" — {long_files_detail}" if long_files_detail else ""
+        out.append(
+            f"- **Split oversized file(s) on the path to "
+            f"`{entry.ref.qualname}`** "
+            f"(long_files = {long_file_count}){detail_suffix}. A file "
+            f"that does not comfortably fit on one screen is a "
+            f"haystack: the reader cannot hold its shape in their head. "
+            f"Extract cohesive groups of functions into sibling modules "
+            f"along existing domain boundaries (one concept per file). "
+            f"Do NOT merely split at arbitrary line counts — look for a "
+            f"natural seam (validators vs loaders vs reporters, for "
+            f"example)."
         )
 
     return out
