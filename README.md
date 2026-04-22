@@ -117,19 +117,73 @@ Clean flows score close to zero; wrapper-heavy flows score high.
 
 ## Install
 
+### Recommended — global CLI via `uv tool` (from GitHub)
+
+The project is not yet published to PyPI, so install straight from the
+GitHub repository. `uv tool install` drops a standalone `rf` binary on
+your PATH without touching any project's environment:
+
 ```bash
-# from PyPI (once released)
-pip install readerfriction
-uv pip install readerfriction
+uv tool install git+https://github.com/mfilipelino/readerfriction.git
+rf --version                   # → readerfriction 0.1.0
+rf --help
+```
 
-# as a global CLI tool
-uv tool install readerfriction
+Pin to a specific commit or tag for reproducibility:
 
-# from GitHub (latest main)
+```bash
+uv tool install "git+https://github.com/mfilipelino/readerfriction.git@08eb250"
+```
+
+Upgrade when new commits land:
+
+```bash
+uv tool install --force git+https://github.com/mfilipelino/readerfriction.git
+# or, once pinned and published:
+uv tool upgrade readerfriction
+```
+
+Uninstall:
+
+```bash
+uv tool uninstall readerfriction
+```
+
+### Into a project's dev dependencies
+
+If you want `rf` to live inside the target project's lockfile:
+
+```bash
+cd /path/to/your/project
+uv add --dev git+https://github.com/mfilipelino/readerfriction.git
+uv run rf scan src/
+```
+
+### Plain pip
+
+```bash
 pip install git+https://github.com/mfilipelino/readerfriction.git
+# or for dev extras (pytest, ruff, pyright, jsonschema):
+pip install "readerfriction[dev] @ git+https://github.com/mfilipelino/readerfriction.git"
+```
 
-# editable, from a local clone
-uv pip install -e .
+### Editable, from a local clone
+
+For contributing to `rf` itself:
+
+```bash
+git clone https://github.com/mfilipelino/readerfriction.git
+cd readerfriction
+uv sync --all-extras
+uv run rf --help
+```
+
+### Once published to PyPI
+
+```bash
+pip install readerfriction           # or:
+uv pip install readerfriction
+uv tool install readerfriction
 ```
 
 ## Quickstart
