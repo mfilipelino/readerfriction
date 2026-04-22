@@ -38,11 +38,19 @@ app = typer.Typer(
         "  agent    Emit a prompt that tells an AI coding agent how to\n"
         "           lower the score WITHOUT gaming the metric (no\n"
         "           one-file collapse, no function merging, no classifier\n"
-        "           evasion). See docs/limits-and-anti-gaming.md.\n\n"
+        "           evasion). See docs/limits-and-anti-gaming.md.\n"
+        "  config   Print the default [tool.readerfriction] TOML with\n"
+        "           inline comments — copy into your pyproject.toml to\n"
+        "           customise weights, thresholds, or max_file_lines.\n\n"
         "All commands accept --format {text,json,markdown}, --out <file>,\n"
         "--exclude <glob>, and --config <pyproject.toml>. --fail-on\n"
         "'metric OP number' makes scan/report exit 1 when the threshold\n"
-        "trips. Run any command with --help for its full option list."
+        "trips.\n\n"
+        "Configuration lives under [tool.readerfriction] in pyproject.toml.\n"
+        "Run `rf config` to print the defaults (weights per metric, warn/\n"
+        "error thresholds for the severity label, max_file_lines for\n"
+        "haystack detection, wrapper_threshold for the 8-rule classifier,\n"
+        "exclude globs). Run any command with --help for its full option list."
     ),
 )
 
@@ -301,6 +309,71 @@ def agent(
     scan_result, wrappers = scan_project_detail(path, config)
     prompt_text = agent_prompt.render(scan_result, wrappers)
     _write(prompt_text, out)
+
+
+@app.command()
+def config(
+    out: Path | None = typer.Option(
+        None, "--out", help="Write the TOML here instead of stdout."
+    ),
+) -> None:
+    """Print the default [tool.readerfriction] TOML for pyproject.toml.
+
+    Useful when cloning the repo or adopting rf in a new project: run
+
+        rf config >> pyproject.toml
+
+    to append the defaults, then adjust. Every key is documented inline
+    so the file is self-explanatory. See spec/config.md for the
+    normative reference.
+    """
+
+    _write(_default_toml(), out)
+
+
+def _default_toml() -> str:
+    defaults = Config()
+    weights = defaults.weights.model_dump()
+    thresholds = defaults.thresholds.model_dump()
+    lines = [
+        "# Default ReaderFriction configuration. Copy into pyproject.toml",
+        "# and adjust as needed. `rf config --help` explains every key.",
+        "",
+        "[tool.readerfriction]",
+        "# Additional glob patterns to exclude from discovery. Defaults",
+        "# already cover venv, .venv, build, dist, __pycache__, .git, .tox,",
+        "# .mypy_cache, .pytest_cache, .ruff_cache.",
+        f"exclude = {defaults.exclude!r}",
+        "",
+        "# 8-rule wrapper classifier threshold. A function matching at least",
+        "# this many rules AND every disqualifier rule (W-02 / W-04 / W-05",
+        "# / W-06 / W-07) is classified as a thin wrapper. Default 6 of 8.",
+        f"wrapper_threshold = {defaults.wrapper_threshold}",
+        "",
+        "# Files on the trace path longer than this count as 'haystack' files",
+        "# and contribute to the long_files metric. 500 lines is a typical",
+        "# style-guide ceiling (Google ~400; Python community ~500).",
+        f"max_file_lines = {defaults.max_file_lines}",
+        "",
+        "# Weights applied in the reader_friction_score aggregate. Higher =",
+        "# more punishment. pass_through_ratio is reported but NOT scored.",
+        "[tool.readerfriction.weights]",
+        f"trace_depth        = {weights['trace_depth']}",
+        f"file_jumps         = {weights['file_jumps']}",
+        f"long_files         = {weights['long_files']}",
+        f"wrapper_depth      = {weights['wrapper_depth']}",
+        f"thin_wrapper_count = {weights['thin_wrapper_count']}",
+        f"context_width      = {weights['context_width']}",
+        f"flow_fragmentation = {weights['flow_fragmentation']}",
+        "",
+        "# Severity labels shown on the text report header. score < warn →",
+        "# 'ok'; warn <= score < error → 'warn'; score >= error → 'error'.",
+        "# Separate from --fail-on, which is an ad-hoc per-invocation gate.",
+        "[tool.readerfriction.thresholds]",
+        f"warn  = {thresholds['warn']}",
+        f"error = {thresholds['error']}",
+    ]
+    return "\n".join(lines) + "\n"
 
 
 # --- helpers ---------------------------------------------------------------

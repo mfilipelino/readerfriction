@@ -261,6 +261,69 @@ def test_agent_help_is_discoverable() -> None:
     assert "front-loads" in out or "NOT to do" in out or "gameable" in out
 
 
+# --- rf config command -------------------------------------------------
+
+
+def test_config_command_exits_zero() -> None:
+    result = _invoke("config")
+    assert result.exit_code == 0, result.output
+
+
+def test_config_output_is_valid_toml() -> None:
+    import tomllib
+
+    result = _invoke("config")
+    assert result.exit_code == 0
+    parsed = tomllib.loads(result.stdout)
+    assert parsed["tool"]["readerfriction"]["wrapper_threshold"] == 6
+    assert parsed["tool"]["readerfriction"]["max_file_lines"] == 500
+    assert parsed["tool"]["readerfriction"]["weights"]["long_files"] == 3
+    assert parsed["tool"]["readerfriction"]["thresholds"]["warn"] == 15
+    assert parsed["tool"]["readerfriction"]["thresholds"]["error"] == 30
+
+
+def test_config_mentions_every_configurable_key() -> None:
+    result = _invoke("config")
+    out = result.stdout
+    for key in (
+        "wrapper_threshold",
+        "max_file_lines",
+        "exclude",
+        "trace_depth",
+        "file_jumps",
+        "long_files",
+        "wrapper_depth",
+        "thin_wrapper_count",
+        "context_width",
+        "flow_fragmentation",
+        "warn",
+        "error",
+    ):
+        assert key in out, f"rf config omits '{key}'"
+
+
+def test_config_write_to_file(tmp_path: Path) -> None:
+    target = tmp_path / "rf.toml"
+    result = _invoke("config", "--out", str(target))
+    assert result.exit_code == 0
+    assert target.exists()
+    assert "[tool.readerfriction]" in target.read_text()
+
+
+def test_help_lists_config_command() -> None:
+    result = _invoke("--help")
+    assert result.exit_code == 0
+    assert "config" in result.output
+
+
+def test_top_level_help_points_to_config() -> None:
+    result = _invoke("--help")
+    out = result.output
+    # Users cloning the repo should discover configurable options from
+    # --help alone.
+    assert "max_file_lines" in out or "rf config" in out
+
+
 def test_long_files_metric_fires_on_haystack(tmp_path: Path) -> None:
     """End-to-end: a >500-line single file yields long_files >= 1 and
     prompts the agent to split it.
